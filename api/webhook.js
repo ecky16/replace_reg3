@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
                         [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
-                        [{ text: '🔧 REPORT TEKNISI', callback_data: 'report_teknisi' }]
+                        [{ text: '🔧 PROD TEKNISI', callback_data: 'report_teknisi' }]
                     ]
                 }
             });
