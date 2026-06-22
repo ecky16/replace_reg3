@@ -75,7 +75,7 @@ module.exports = async (req, res) => {
                     inline_keyboard: [
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
-                        [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
+                        [{ text: '📑 REKAP CLOSED BY', callback_data: 'rekap_closing' }],
                         [{ text: '🔧 PROD TEKNISI', callback_data: 'prod_teknisi' }] 
                     ]
                 }
@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
                 title = '📋 REPORT DAPROS';
             } else if (data === 'rekap_closing') {
                 action = 'closing';
-                title = '📑 REKAP CLOSING BY';
+                title = '📑 REKAP CLOSED BY';
             } else if (data === 'sub_teknisi') {
                 action = 'teknisi';
             } else if (data === 'sub_branch') {
