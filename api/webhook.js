@@ -4,6 +4,40 @@ const TOKEN = process.env.TELEGRAM_TOKEN;
 const GAS_URL = process.env.GAS_URL; // Diambil dari environment Vercel
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
 
+// Fungsi bantuan untuk memformat tabel (rata tengah header & konversi persen)
+function formatTable(rows) {
+    let text = '';
+    rows.forEach((row, rowIndex) => {
+        let formattedRow = row.map((cell, colIndex) => {
+            let cellStr = (cell !== "" && cell !== undefined ? cell : '-').toString();
+
+            // Aturan khusus kolom terakhir (Persentase), abaikan baris pertama (header)
+            if (rowIndex > 0 && colIndex === row.length - 1) {
+                let num = parseFloat(cellStr);
+                if (!isNaN(num)) {
+                    // Jadikan persen dengan 2 angka di belakang koma
+                    cellStr = (num * 100).toFixed(2) + '%';
+                }
+            }
+
+            // Pastikan tidak lebih dari 10 karakter agar tabel tidak hancur
+            cellStr = cellStr.substring(0, 10);
+
+            // Jika ini baris pertama (Header), buat rata tengah
+            if (rowIndex === 0) {
+                let padLeft = Math.floor((10 - cellStr.length) / 2);
+                return cellStr.padStart(cellStr.length + padLeft, ' ').padEnd(10, ' ');
+            }
+
+            // Jika baris biasa, buat rata kiri
+            return cellStr.padEnd(10, ' ');
+        });
+        
+        text += formattedRow.join(' | ') + '\n';
+    });
+    return text;
+}
+
 module.exports = async (req, res) => {
     // Hanya proses method POST dari Telegram
     if (req.method !== 'POST') return res.status(200).send('Bot Aktif');
@@ -39,11 +73,7 @@ module.exports = async (req, res) => {
                 const rows = response.data.data;
                 
                 let text = '<b>📊 REPORT PROGRESS</b>\n\n<pre>';
-                rows.forEach(row => {
-                    // Ambil max 10 karakter dan ratakan per kolom
-                    let formatted = row.map(cell => (cell !== "" && cell !== undefined ? cell : '-').toString().substring(0, 10).padEnd(10, ' '));
-                    text += formatted.join(' | ') + '\n';
-                });
+                text += formatTable(rows);
                 text += '</pre>';
                 
                 await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
@@ -53,10 +83,7 @@ module.exports = async (req, res) => {
                 const rows = response.data.data;
                 
                 let text = '<b>📋 REPORT DAPROS</b>\n\n<pre>';
-                rows.forEach(row => {
-                    let formatted = row.map(cell => (cell !== "" && cell !== undefined ? cell : '-').toString().substring(0, 10).padEnd(10, ' '));
-                    text += formatted.join(' | ') + '\n';
-                });
+                text += formatTable(rows);
                 text += '</pre>';
                 
                 await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
@@ -66,6 +93,6 @@ module.exports = async (req, res) => {
         return res.status(200).send('OK');
     } catch (error) {
         console.error(error);
-        return res.status(200).send('OK'); // Cegah Telegram mengirim ulang request berulang kali jika error
+        return res.status(200).send('OK'); 
     }
 };
