@@ -1,18 +1,28 @@
 const axios = require('axios');
 
 const TOKEN = process.env.TELEGRAM_TOKEN;
-const GAS_URL = process.env.GAS_URL; // Diambil dari environment Vercel
+const GAS_URL = process.env.GAS_URL;
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
 
-// Fungsi bantuan untuk memformat tabel (rata tengah header & konversi persen)
+// Helper: Fungsi untuk rata tengah (center alignment)
+function centerText(text, width) {
+    let str = text.toString().substring(0, width);
+    let padLeft = Math.floor((width - str.length) / 2);
+    let padRight = width - str.length - padLeft;
+    return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
+}
+
+// Helper: Fungsi memformat tabel (rata tengah semua & garis pembatas)
 function formatTable(rows) {
     let text = '';
+    const colWidth = 10;
+
     rows.forEach((row, rowIndex) => {
         let formattedRow = row.map((cell, colIndex) => {
             let cellStr = (cell !== "" && cell !== undefined ? cell : '-').toString();
 
             // Aturan khusus kolom terakhir (Persentase), abaikan baris pertama (header)
-            if (rowIndex > 0 && colIndex === row.length - 1) {
+            if (rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
                 let num = parseFloat(cellStr);
                 if (!isNaN(num)) {
                     // Jadikan persen dengan 2 angka di belakang koma
@@ -20,20 +30,19 @@ function formatTable(rows) {
                 }
             }
 
-            // Pastikan tidak lebih dari 10 karakter agar tabel tidak hancur
-            cellStr = cellStr.substring(0, 10);
-
-            // Jika ini baris pertama (Header), buat rata tengah
-            if (rowIndex === 0) {
-                let padLeft = Math.floor((10 - cellStr.length) / 2);
-                return cellStr.padStart(cellStr.length + padLeft, ' ').padEnd(10, ' ');
-            }
-
-            // Jika baris biasa, buat rata kiri
-            return cellStr.padEnd(10, ' ');
+            // Buat teks rata tengah untuk setiap sel
+            return centerText(cellStr, colWidth);
         });
         
+        // Gabungkan kolom dengan pembatas ' | '
         text += formattedRow.join(' | ') + '\n';
+
+        // Tambahkan garis pembatas tepat setelah baris pertama (Header)
+        if (rowIndex === 0) {
+            // Buat garis '----------' untuk setiap kolom, lalu gabung dengan '-|-'
+            let separatorRow = row.map(() => '-'.repeat(colWidth));
+            text += separatorRow.join('-|-') + '\n';
+        }
     });
     return text;
 }
