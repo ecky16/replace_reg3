@@ -31,7 +31,7 @@ function formatTable(rows) {
                 }
             }
 
-            // ATURAN BARU: Kolom pertama (index 0) di bawah header (rowIndex > 0) -> Rata Kiri
+            // Kolom pertama (index 0) di bawah header (rowIndex > 0) -> Rata Kiri
             if (rowIndex > 0 && colIndex === 0) {
                 return cellStr.substring(0, colWidth).padEnd(colWidth, ' ');
             }
@@ -51,7 +51,7 @@ function formatTable(rows) {
 }
 
 module.exports = async (req, res) => {
-    if (req.method !== 'POST') return res.status(200).send('Bot Aktif');
+    if (req.method !== 'POST') return res.status(200).send('Bot Hack Aktif');
 
     try {
         const { message, callback_query } = req.body;
@@ -66,8 +66,8 @@ module.exports = async (req, res) => {
                     inline_keyboard: [
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
-                        [{ text: '📑 REKAP CLOSED BY', callback_data: 'rekap_closing' }],
-                        [{ text: '🔧 PROD TEKNISI', callback_data: 'report_teknisi' }]
+                        [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
+                        [{ text: '🔧 PROD TEKNISI', callback_data: 'prod_teknisi' }] // Ganti nama tombol utama
                     ]
                 }
             });
@@ -80,6 +80,24 @@ module.exports = async (req, res) => {
 
             await axios.post(`${TELEGRAM_API}/answerCallbackQuery`, { callback_query_id: callback_query.id });
 
+            // 1. Logika ketika tombol utama PROD TEKNISI diklik -> Munculkan 2 Sub-Button
+            if (data === 'prod_teknisi') {
+                await axios.post(`${TELEGRAM_API}/sendMessage`, {
+                    chat_id: chatId,
+                    text: '<b>Pilih kategori PROD TEKNISI:</b>',
+                    parse_mode: 'HTML',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '👤 TEKNISI', callback_data: 'sub_teknisi' },
+                                { text: '🏢 BRANCH', callback_data: 'sub_branch' }
+                            ]
+                        ]
+                    }
+                });
+                return res.status(200).send('OK');
+            }
+
             let action = '';
             let title = '';
 
@@ -91,17 +109,19 @@ module.exports = async (req, res) => {
                 title = '📋 REPORT DAPROS';
             } else if (data === 'rekap_closing') {
                 action = 'closing';
-                title = '📑 REKAP CLOSED BY \n ACS : Close by sistem \n Technician : Close by lensa chat';
-            } else if (data === 'report_teknisi') {
-                action = 'teknisi'; 
+                title = '📑 REKAP CLOSING BY';
+            } else if (data === 'sub_teknisi') {
+                action = 'teknisi';
+            } else if (data === 'sub_branch') {
+                action = 'branch';
             }
 
             if (action !== '') {
                 const response = await axios.get(`${GAS_URL}?action=${action}`);
                 
+                // Handler Sub-Button TEKNISI
                 if (action === 'teknisi') {
                     const { header, best, middle, worst } = response.data;
-                    
                     let text = '<b>🔧 PROD TEKNISI</b>\n\n';
                     
                     text += '<b>1. 🎖 BEST 5 TEKNISI</b>\n<pre>';
@@ -117,7 +137,28 @@ module.exports = async (req, res) => {
                     text += '</pre>';
                     
                     await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
+                
+                // Handler Sub-Button BRANCH (Fitur baru)
+                } else if (action === 'branch') {
+                    const { freelance, multiskill, dedicated } = response.data;
+                    let text = '<b>🏢 PROD TEKNISI - BRANCH</b>\n\n';
+                    
+                    text += '<b>1. FREELANCE</b>\n<pre>';
+                    text += formatTable(freelance);
+                    text += '</pre>\n';
+                    
+                    text += '<b>2. Multiskill</b>\n<pre>';
+                    text += formatTable(multiskill);
+                    text += '</pre>\n';
+                    
+                    text += '<b>3. Dedicated</b>\n<pre>';
+                    text += formatTable(dedicated);
+                    text += '</pre>';
+                    
+                    await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
+                
                 } else {
+                    // Handler Tombol Lainnya
                     const rows = response.data.data;
                     let text = `<b>${title}</b>\n\n<pre>`;
                     text += formatTable(rows);
