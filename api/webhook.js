@@ -12,8 +12,8 @@ function centerText(text, width) {
     return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
 }
 
-// Helper: Fungsi memformat tabel (rata tengah & kolom pertama rata kiri)
-function formatTable(rows) {
+// Helper: Fungsi memformat tabel (tambah parameter isPercentage untuk Branch)
+function formatTable(rows, isPercentage = true) {
     let text = '';
     const colWidth = 10;
 
@@ -23,8 +23,8 @@ function formatTable(rows) {
         let formattedRow = row.map((cell, colIndex) => {
             let cellStr = (cell !== "" && cell !== undefined ? cell : '-').toString();
 
-            // Aturan khusus kolom terakhir (Persentase), abaikan baris pertama (header)
-            if (rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
+            // Aturan khusus kolom terakhir (Persentase), hanya jalan jika isPercentage = true
+            if (isPercentage && rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
                 let num = parseFloat(cellStr);
                 if (!isNaN(num) && cellStr.includes('.')) {
                     cellStr = (num * 100).toFixed(2) + '%';
@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
                         [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
-                        [{ text: '🔧 PROD TEKNISI', callback_data: 'prod_teknisi' }] // Ganti nama tombol utama
+                        [{ text: '🔧 PROD TEKNISI', callback_data: 'prod_teknisi' }] 
                     ]
                 }
             });
@@ -138,21 +138,22 @@ module.exports = async (req, res) => {
                     
                     await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
                 
-                // Handler Sub-Button BRANCH (Fitur baru)
+                // Handler Sub-Button BRANCH 
                 } else if (action === 'branch') {
                     const { freelance, multiskill, dedicated } = response.data;
                     let text = '<b>🏢 PROD TEKNISI - BRANCH</b>\n\n';
                     
+                    // PERBAIKAN: Menambahkan argumen 'false' agar tidak dikonversi jadi persen
                     text += '<b>1. FREELANCE</b>\n<pre>';
-                    text += formatTable(freelance);
+                    text += formatTable(freelance, false); 
                     text += '</pre>\n';
                     
                     text += '<b>2. Multiskill</b>\n<pre>';
-                    text += formatTable(multiskill);
+                    text += formatTable(multiskill, false);
                     text += '</pre>\n';
                     
                     text += '<b>3. Dedicated</b>\n<pre>';
-                    text += formatTable(dedicated);
+                    text += formatTable(dedicated, false);
                     text += '</pre>';
                     
                     await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
