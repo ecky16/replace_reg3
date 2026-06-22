@@ -104,15 +104,15 @@ module.exports = async (req, res) => {
                     
                     let text = '<b>🔧 REPORT TEKNISI</b>\n\n';
                     
-                    text += '<b>1. BEST 5 TEKNISI</b>\n<pre>';
+                    text += '<b>1. 🎖 BEST 5 TEKNISI</b>\n<pre>';
                     text += formatTable([header, ...best]);
                     text += '</pre>\n';
                     
-                    text += '<b>2. MIDDLE 5 TEKNISI</b>\n<pre>';
+                    text += '<b>2. 🥈 MIDDLE 5 TEKNISI</b>\n<pre>';
                     text += formatTable([header, ...middle]);
                     text += '</pre>\n';
                     
-                    text += '<b>3. WORST 5 TEKNISI</b>\n<pre>';
+                    text += '<b>3. 🚨 WORST 5 TEKNISI</b>\n<pre>';
                     text += formatTable([header, ...worst]);
                     text += '</pre>';
                     
