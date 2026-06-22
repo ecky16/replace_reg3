@@ -15,7 +15,7 @@ function centerText(text, width) {
 // Helper: Fungsi memformat tabel (rata tengah semua & garis pembatas)
 function formatTable(rows) {
     let text = '';
-    const colWidth = 10;
+    const colWidth = 11;
 
     rows.forEach((row, rowIndex) => {
         if (row.join('').trim() === '') return; // Skip baris kosong
