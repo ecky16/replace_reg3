@@ -12,7 +12,7 @@ function centerText(text, width) {
     return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
 }
 
-// Helper: Fungsi memformat tabel (tambah parameter isPercentage untuk Branch)
+// Helper: Fungsi memformat tabel
 function formatTable(rows, isPercentage = true) {
     let text = '';
     const colWidth = 10;
@@ -23,11 +23,20 @@ function formatTable(rows, isPercentage = true) {
         let formattedRow = row.map((cell, colIndex) => {
             let cellStr = (cell !== "" && cell !== undefined ? cell : '-').toString();
 
-            // Aturan khusus kolom terakhir (Persentase), hanya jalan jika isPercentage = true
-            if (isPercentage && rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
-                let num = parseFloat(cellStr);
-                if (!isNaN(num) && cellStr.includes('.')) {
-                    cellStr = (num * 100).toFixed(2) + '%';
+            // Aturan khusus kolom terakhir
+            if (rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
+                // Antisipasi kalau dari spreadsheet formatnya pakai koma (misal 0,00)
+                let normalizedStr = cellStr.replace(',', '.'); 
+                let num = parseFloat(normalizedStr);
+                
+                if (!isNaN(num) && (normalizedStr.includes('.') || typeof cell === 'number')) {
+                    if (isPercentage) {
+                        // Fitur biasa: Kali 100 dan tambah persen
+                        cellStr = (num * 100).toFixed(2) + '%';
+                    } else {
+                        // Fitur Branch: Cuma batasi 2 angka di belakang koma
+                        cellStr = num.toFixed(2);
+                    }
                 }
             }
 
@@ -143,12 +152,11 @@ module.exports = async (req, res) => {
                     const { freelance, multiskill, dedicated } = response.data;
                     let text = '<b>🏢 PROD TEKNISI - BRANCH</b>\n\n';
                     
-                    // PERBAIKAN: Menambahkan argumen 'false' agar tidak dikonversi jadi persen
                     text += '<b>1. FREELANCE</b>\n<pre>';
                     text += formatTable(freelance, false); 
                     text += '</pre>\n';
                     
-                    text += '<b>2. Multiskill</b>\n<pre>';
+                    text += '<b>2. MultiTeknisi</b>\n<pre>';
                     text += formatTable(multiskill, false);
                     text += '</pre>\n';
                     
