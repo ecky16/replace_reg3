@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
                 title = '📋 REPORT DAPROS';
             } else if (data === 'rekap_closing') {
                 action = 'closing';
-                title = '📑 REKAP CLOSING BY';
+                title = '📑 REKAP CLOSED BY \n ACS : Close by sistem \n Technician : Close by lensa chat';
             } else if (data === 'report_teknisi') {
                 action = 'teknisi'; 
             }
