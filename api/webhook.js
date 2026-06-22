@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
                     inline_keyboard: [
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
-                        [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
+                        [{ text: '📑 REKAP CLOSED BY', callback_data: 'rekap_closing' }],
                         [{ text: '🔧 PROD TEKNISI', callback_data: 'report_teknisi' }]
                     ]
                 }
