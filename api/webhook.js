@@ -102,7 +102,7 @@ module.exports = async (req, res) => {
                 if (action === 'teknisi') {
                     const { header, best, middle, worst } = response.data;
                     
-                    let text = '<b>🔧 REPORT TEKNISI</b>\n\n';
+                    let text = '<b>🔧 PROD TEKNISI</b>\n\n';
                     
                     text += '<b>1. 🎖 BEST 5 TEKNISI</b>\n<pre>';
                     text += formatTable([header, ...best]);
