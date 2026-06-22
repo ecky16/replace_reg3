@@ -15,7 +15,7 @@ function centerText(text, width) {
 // Helper: Fungsi memformat tabel (rata tengah & kolom pertama rata kiri)
 function formatTable(rows) {
     let text = '';
-    const colWidth = 11;
+    const colWidth = 10;
 
     rows.forEach((row, rowIndex) => {
         if (row.join('').trim() === '') return; // Skip baris kosong
