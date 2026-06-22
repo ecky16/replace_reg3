@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
                 title = '📋 REPORT DAPROS';
             } else if (data === 'rekap_closing') {
                 action = 'closing'; // MEMANGGIL DATA CLOSING DARI GAS
-                title = '📑 REKAP CLOSING BY';
+                title = '📑 REKAP CLOSING BY - HI';
             }
 
             if (action !== '') {
