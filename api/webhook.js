@@ -26,7 +26,6 @@ function formatTable(rows) {
             // Aturan khusus kolom terakhir (Persentase), abaikan baris pertama (header)
             if (rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
                 let num = parseFloat(cellStr);
-                // Jika formatnya desimal (mengandung titik), jadikan persen
                 if (!isNaN(num) && cellStr.includes('.')) {
                     cellStr = (num * 100).toFixed(2) + '%';
                 }
@@ -61,7 +60,8 @@ module.exports = async (req, res) => {
                     inline_keyboard: [
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
-                        [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }] // TOMBOL BARU
+                        [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
+                        [{ text: '🔧 REPORT TEKNISI', callback_data: 'report_teknisi' }] // TOMBOL BARU
                     ]
                 }
             });
@@ -84,23 +84,43 @@ module.exports = async (req, res) => {
                 action = 'dapros';
                 title = '📋 REPORT DAPROS';
             } else if (data === 'rekap_closing') {
-                action = 'closing'; // MEMANGGIL DATA CLOSING DARI GAS
-                title = '📑 REKAP CLOSING BY - HI';
+                action = 'closing';
+                title = '📑 REKAP CLOSING BY';
+            } else if (data === 'report_teknisi') {
+                action = 'teknisi'; // Menandakan request ke bagian teknisi
             }
 
             if (action !== '') {
                 const response = await axios.get(`${GAS_URL}?action=${action}`);
-                const rows = response.data.data;
                 
-                let text = `<b>${title}</b>\n\n<pre>`;
-                text += formatTable(rows);
-                text += '</pre>';
-                
-                await axios.post(`${TELEGRAM_API}/sendMessage`, { 
-                    chat_id: chatId, 
-                    text: text, 
-                    parse_mode: 'HTML' 
-                });
+                // Kondisi khusus untuk menangani 3 tabel sekaligus di REPORT TEKNISI
+                if (action === 'teknisi') {
+                    const { header, best, middle, worst } = response.data;
+                    
+                    let text = '<b>🔧 REPORT TEKNISI</b>\n\n';
+                    
+                    text += '<b>1. BEST 5 TEKNISI (AP3:AT7)</b>\n<pre>';
+                    text += formatTable([header, ...best]);
+                    text += '</pre>\n';
+                    
+                    text += '<b>2. MIDDLE 5 TEKNISI (AP10:AT14)</b>\n<pre>';
+                    text += formatTable([header, ...middle]);
+                    text += '</pre>\n';
+                    
+                    text += '<b>3. WORST 5 TEKNISI (AP17:AT21)</b>\n<pre>';
+                    text += formatTable([header, ...worst]);
+                    text += '</pre>';
+                    
+                    await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
+                } else {
+                    // Handler bawaan untuk tombol-tombol tunggal sebelumnya
+                    const rows = response.data.data;
+                    let text = `<b>${title}</b>\n\n<pre>`;
+                    text += formatTable(rows);
+                    text += '</pre>';
+                    
+                    await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
+                }
             }
         }
         
