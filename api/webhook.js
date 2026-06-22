@@ -12,7 +12,7 @@ function centerText(text, width) {
     return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
 }
 
-// Helper: Fungsi memformat tabel
+// Helper: Fungsi memformat tabel (tambah parameter isPercentage)
 function formatTable(rows, isPercentage = true) {
     let text = '';
     const colWidth = 10;
@@ -25,17 +25,17 @@ function formatTable(rows, isPercentage = true) {
 
             // Aturan khusus kolom terakhir
             if (rowIndex > 0 && colIndex === row.length - 1 && cellStr !== '-') {
-                // Antisipasi kalau dari spreadsheet formatnya pakai koma (misal 0,00)
                 let normalizedStr = cellStr.replace(',', '.'); 
                 let num = parseFloat(normalizedStr);
                 
                 if (!isNaN(num) && (normalizedStr.includes('.') || typeof cell === 'number')) {
                     if (isPercentage) {
-                        // Fitur biasa: Kali 100 dan tambah persen
+                        // Jika persen aktif, kali 100 dan tambah %
                         cellStr = (num * 100).toFixed(2) + '%';
                     } else {
-                        // Fitur Branch: Cuma batasi 2 angka di belakang koma
-                        cellStr = num.toFixed(2);
+                        // Jika persen mati, tampilkan angka murni (batasi 2 koma jika desimal)
+                        // Tapi jika angka bulat (seperti di Closing), biarkan bulat
+                        cellStr = Number.isInteger(num) ? num.toString() : num.toFixed(2);
                     }
                 }
             }
@@ -156,7 +156,7 @@ module.exports = async (req, res) => {
                     text += formatTable(freelance, false); 
                     text += '</pre>\n';
                     
-                    text += '<b>2. MultiTeknisi</b>\n<pre>';
+                    text += '<b>2. Multiskill</b>\n<pre>';
                     text += formatTable(multiskill, false);
                     text += '</pre>\n';
                     
@@ -167,10 +167,17 @@ module.exports = async (req, res) => {
                     await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
                 
                 } else {
-                    // Handler Tombol Lainnya
+                    // Handler Tombol Lainnya (Progress, Dapros, Closing)
                     const rows = response.data.data;
                     let text = `<b>${title}</b>\n\n<pre>`;
-                    text += formatTable(rows);
+                    
+                    // PERBAIKAN: Jika yang diklik adalah rekap_closing, matikan fitur persen
+                    if (action === 'closing') {
+                        text += formatTable(rows, false);
+                    } else {
+                        text += formatTable(rows, true); // Progress & Dapros tetap pakai persen
+                    }
+                    
                     text += '</pre>';
                     
                     await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
