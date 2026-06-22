@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
                 const response = await axios.get(`${GAS_URL}?action=progress`);
                 const rows = response.data.data;
                 
-                let text = '<b>📊 REPORT PROGRESS (T1:Z15)</b>\n\n<pre>';
+                let text = '<b>📊 REPORT PROGRESS</b>\n\n<pre>';
                 rows.forEach(row => {
                     // Ambil max 10 karakter dan ratakan per kolom
                     let formatted = row.map(cell => (cell !== "" && cell !== undefined ? cell : '-').toString().substring(0, 10).padEnd(10, ' '));
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
                 const response = await axios.get(`${GAS_URL}?action=dapros`);
                 const rows = response.data.data;
                 
-                let text = '<b>📋 REPORT DAPROS (AC1:AG14)</b>\n\n<pre>';
+                let text = '<b>📋 REPORT DAPROS</b>\n\n<pre>';
                 rows.forEach(row => {
                     let formatted = row.map(cell => (cell !== "" && cell !== undefined ? cell : '-').toString().substring(0, 10).padEnd(10, ' '));
                     text += formatted.join(' | ') + '\n';
