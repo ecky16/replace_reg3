@@ -1,0 +1,9 @@
+{
+  "name": "telegram-sheet-bot",
+  "version": "1.0.0",
+  "description": "Bot Telegram untuk menampilkan data Spreadsheet via Vercel",
+  "main": "api/webhook.js",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
