@@ -12,7 +12,7 @@ function centerText(text, width) {
     return ' '.repeat(padLeft) + str + ' '.repeat(padRight);
 }
 
-// Helper: Fungsi memformat tabel (rata tengah semua & garis pembatas)
+// Helper: Fungsi memformat tabel (rata tengah & kolom pertama rata kiri)
 function formatTable(rows) {
     let text = '';
     const colWidth = 11;
@@ -31,6 +31,12 @@ function formatTable(rows) {
                 }
             }
 
+            // ATURAN BARU: Kolom pertama (index 0) di bawah header (rowIndex > 0) -> Rata Kiri
+            if (rowIndex > 0 && colIndex === 0) {
+                return cellStr.substring(0, colWidth).padEnd(colWidth, ' ');
+            }
+
+            // Sisanya tetap rata tengah
             return centerText(cellStr, colWidth);
         });
         
@@ -61,7 +67,7 @@ module.exports = async (req, res) => {
                         [{ text: '📊 REPORT PROGRESS', callback_data: 'report_progress' }],
                         [{ text: '📋 REPORT DAPROS', callback_data: 'report_dapros' }],
                         [{ text: '📑 REKAP CLOSING BY', callback_data: 'rekap_closing' }],
-                        [{ text: '🔧 PROD TEKNISI', callback_data: 'report_teknisi' }] // TOMBOL BARU
+                        [{ text: '🔧 REPORT TEKNISI', callback_data: 'report_teknisi' }]
                     ]
                 }
             });
@@ -87,13 +93,12 @@ module.exports = async (req, res) => {
                 action = 'closing';
                 title = '📑 REKAP CLOSING BY';
             } else if (data === 'report_teknisi') {
-                action = 'teknisi'; // Menandakan request ke bagian teknisi
+                action = 'teknisi'; 
             }
 
             if (action !== '') {
                 const response = await axios.get(`${GAS_URL}?action=${action}`);
                 
-                // Kondisi khusus untuk menangani 3 tabel sekaligus di REPORT TEKNISI
                 if (action === 'teknisi') {
                     const { header, best, middle, worst } = response.data;
                     
@@ -113,7 +118,6 @@ module.exports = async (req, res) => {
                     
                     await axios.post(`${TELEGRAM_API}/sendMessage`, { chat_id: chatId, text: text, parse_mode: 'HTML' });
                 } else {
-                    // Handler bawaan untuk tombol-tombol tunggal sebelumnya
                     const rows = response.data.data;
                     let text = `<b>${title}</b>\n\n<pre>`;
                     text += formatTable(rows);
